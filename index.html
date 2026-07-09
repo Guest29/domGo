@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#333333" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ДомGo" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>ДомGo</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app" aria-label="ДомGo">
+    <section class="camera-screen" aria-label="Камера">
+      <video id="liveCamera" class="camera-layer live-camera" autoplay muted playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback" aria-label="Изображение с камеры"></video>
+      <video id="demoVideo" class="camera-layer demo-video" muted playsinline webkit-playsinline preload="metadata" disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback" aria-label="Демо-видео"></video>
+      <div class="camera-vignette" aria-hidden="true"></div>
+      <div class="scan-grid" aria-hidden="true"></div>
+
+      <header class="minimal-topbar" aria-label="Верхняя панель">
+        <img src="assets/logo-domgo.png" alt="ДомGo" class="brand-logo" draggable="false" />
+      </header>
+
+      <p class="scan-status" id="scanStatus" aria-live="polite">Камера запускается…</p>
+
+      <div class="start-actions" id="startActions">
+        <button class="start-demo-button" id="startDemoButton" type="button">Запустить демо</button>
+        <a class="ar-mode-link" href="ar.html">QR-режим</a>
+      </div>
+
+      <section class="demo-selector is-hidden" id="demoSelector" aria-label="Демо-ролики">
+        <p class="demo-selector-title">Демо-ролики</p>
+        <div class="demo-options" id="demoOptions"></div>
+        <button class="return-camera-button" id="returnCameraButton" type="button">К камере</button>
+      </section>
+
+      <section class="found-panel is-hidden" id="foundPanel" aria-live="polite" aria-label="Найденный дом"></section>
+    </section>
+
+    <section class="full-ui" id="fullUi" aria-hidden="true" aria-label="Меню дома">
+      <div class="full-ui-bg" aria-hidden="true"></div>
+      <div class="full-ui-content" id="fullUiContent">
+        <header class="ui-header">
+          <img src="assets/logo-domgo.png" alt="ДомGo" class="ui-logo" draggable="false" />
+          <button class="ghost-button" id="closeFullUi" type="button">Закрыть</button>
+        </header>
+        <div id="buildingContent"></div>
+      </div>
+    </section>
+
+    <section class="apartment-drawer" id="apartmentDrawer" aria-hidden="true">
+      <div class="drawer-backdrop" id="drawerBackdrop"></div>
+      <article class="drawer-card" id="drawerCard"></article>
+    </section>
+
+    <section class="ai-panel" id="aiPanel" aria-hidden="true">
+      <div class="ai-backdrop" id="aiBackdrop"></div>
+      <article class="ai-card">
+        <header class="ai-header">
+          <img src="assets/logo-domgo.png" alt="ДомGo" class="ai-logo" draggable="false" />
+          <button class="ghost-button" id="closeAi" type="button">Закрыть</button>
+        </header>
+        <p class="ai-kicker">Обзор от ИИ</p>
+        <h2>Анализ релевантности квартиры</h2>
+        <div class="ai-output" id="aiOutput" aria-live="polite"></div>
+      </article>
+    </section>
+
+    <aside class="app-push is-hidden" id="appPush" aria-label="Уведомление">
+      <img src="assets/logo-domgo.png" alt="ДомGo" class="app-push-logo" draggable="false" />
+      <div>
+        <strong>Рядом найдена квартира</strong>
+        <span>Откройте ДомGo, чтобы посмотреть варианты поблизости.</span>
+      </div>
+      <button id="pushOpenButton" type="button">Посмотреть</button>
+    </aside>
+  </main>
+  <script src="app.js" defer></script>
+</body>
+</html>

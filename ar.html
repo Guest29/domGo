@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#333333" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>ДомGo — QR-режим</title>
+  <link rel="icon" href="assets/icon-192.png" />
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <style>
+    @font-face {
+      font-family: "SPORE";
+      src: url("assets/SPORERegular-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    :root {
+      --brand: #fc403a;
+      --cta: #f15044;
+      --dark: #333333;
+      --white: #ffffff;
+      --text: #1f1f1f;
+      --muted: #666666;
+      --font: "SPORE", "Roboto", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: var(--font);
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
+      overscroll-behavior: none;
+    }
+    button, a { font: inherit; }
+    video, img, canvas { -webkit-touch-callout: none; user-select: none; -webkit-user-drag: none; }
+    .qr-camera {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      background: #000;
+      transform: translateZ(0);
+    }
+    .qr-vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 45%, rgba(0,0,0,0) 0 38%, rgba(0,0,0,.30) 72%, rgba(0,0,0,.62) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,0) 28%, rgba(0,0,0,.55));
+      z-index: 3;
+    }
+    .qr-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .qr-top {
+      position: absolute;
+      top: calc(22px + env(safe-area-inset-top));
+      left: 24px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      pointer-events: auto;
+    }
+    .qr-logo {
+      width: 132px;
+      height: 132px;
+      object-fit: contain;
+      filter: drop-shadow(0 16px 28px rgba(0,0,0,.35));
+    }
+    .qr-close {
+      color: var(--white);
+      text-decoration: none;
+      background: rgba(51,51,51,.86);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      padding: 14px 18px;
+      font-weight: 900;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 16px 36px rgba(0,0,0,.25);
+    }
+    .qr-guide {
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      width: min(620px, 68vw);
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      border: 4px solid rgba(255,255,255,.28);
+      border-radius: 38px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 0 0 9999px rgba(0,0,0,.06);
+      opacity: .95;
+    }
+    .qr-guide::before,
+    .qr-guide::after {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: 38px;
+      background:
+        linear-gradient(var(--cta),var(--cta)) left top / 94px 6px no-repeat,
+        linear-gradient(var(--cta),var(--cta)) left top / 6px 94px no-repeat,
+        linear-gradient(var(--cta),var(--cta)) right top / 94px 6px no-repeat,
+        linear-gradient(var(--cta),var(--cta)) right top / 6px 94px no-repeat,
+        linear-gradient(var(--cta),var(--cta)) left bottom / 94px 6px no-repeat,
+        linear-gradient(var(--cta),var(--cta)) left bottom / 6px 94px no-repeat,
+        linear-gradient(var(--cta),var(--cta)) right bottom / 94px 6px no-repeat,
+        linear-gradient(var(--cta),var(--cta)) right bottom / 6px 94px no-repeat;
+    }
+    .qr-guide::after {
+      inset: 18px;
+      border: 2px dashed rgba(255,255,255,.24);
+      background: none;
+    }
+    .qr-status {
+      position: absolute;
+      left: 50%;
+      bottom: calc(32px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: min(760px, calc(100% - 32px));
+      color: var(--white);
+      background: rgba(51,51,51,.86);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 28px;
+      padding: 16px 18px;
+      text-align: center;
+      line-height: 1.35;
+      font-size: 20px;
+      font-weight: 900;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 20px 54px rgba(0,0,0,.32);
+      pointer-events: auto;
+    }
+    .qr-status small {
+      display: block;
+      margin-top: 4px;
+      color: rgba(255,255,255,.72);
+      font-size: 14px;
+      font-family: Roboto, system-ui, sans-serif;
+      font-weight: 700;
+    }
+    .qr-help {
+      position: absolute;
+      right: 24px;
+      bottom: calc(132px + env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 13px;
+      min-width: 222px;
+      color: var(--white);
+      text-decoration: none;
+      background: rgba(51,51,51,.78);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 24px;
+      pointer-events: auto;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 16px 36px rgba(0,0,0,.22);
+      font-weight: 900;
+    }
+    .qr-help img { width: 72px; height: 72px; border-radius: 16px; object-fit: cover; background: #fff; }
+    .qr-help span { font-size: 16px; line-height: 1.15; }
+    .fallback-button {
+      display: none;
+      margin: 12px auto 0;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 16px;
+      background: var(--cta);
+      color: #fff;
+      font-weight: 950;
+      pointer-events: auto;
+    }
+    .fallback-button.is-visible { display: block; }
+    .qr-frame {
+      position: fixed;
+      z-index: 11;
+      pointer-events: none;
+      border: 4px solid var(--cta);
+      border-radius: 18px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.6), 0 18px 50px rgba(0,0,0,.25);
+      opacity: 0;
+      transform: translateZ(0) scale(.96);
+      transition: opacity .18s ease, transform .18s ease, left .12s linear, top .12s linear, width .12s linear, height .12s linear;
+    }
+    .qr-frame.is-visible { opacity: 1; transform: translateZ(0) scale(1); }
+    .qr-house-wrap {
+      position: fixed;
+      z-index: 12;
+      left: 50%;
+      top: 48%;
+      width: 230px;
+      height: 230px;
+      margin-left: -115px;
+      margin-top: -170px;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(24px) scale(.72) rotateX(18deg);
+      transform-style: preserve-3d;
+      transition: opacity .28s ease, transform .36s cubic-bezier(.2,.9,.2,1), left .14s linear, top .14s linear;
+    }
+    .qr-house-wrap.is-visible { opacity: 1; transform: translateY(0) scale(1) rotateX(18deg); }
+    .qr-house {
+      position: relative;
+      width: 165px;
+      height: 132px;
+      transform: rotateX(58deg) rotateZ(-35deg);
+      transform-style: preserve-3d;
+      filter: drop-shadow(0 34px 24px rgba(0,0,0,.38));
+      animation: houseFloat 2.6s ease-in-out infinite;
+    }
+    @keyframes houseFloat { 0%,100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+    .house-base {
+      position: absolute;
+      inset: 20px 16px 0;
+      background: linear-gradient(135deg, #fc403a, #f15044);
+      border-radius: 8px;
+      transform: translateZ(28px);
+      box-shadow: inset 0 -18px 0 rgba(0,0,0,.16);
+    }
+    .house-roof {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: 0;
+      height: 62px;
+      background: #333;
+      clip-path: polygon(50% 0, 100% 70%, 88% 70%, 88% 100%, 12% 100%, 12% 70%, 0 70%);
+      transform: translateZ(52px);
+    }
+    .house-window {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: rgba(255,255,255,.92);
+      border-radius: 4px;
+      transform: translateZ(60px);
+      box-shadow: 42px 0 0 rgba(255,255,255,.92), 84px 0 0 rgba(255,255,255,.92);
+      left: 30px;
+      top: 72px;
+    }
+    .house-pin {
+      position: absolute;
+      left: 50%;
+      bottom: -46px;
+      width: 78px;
+      height: 78px;
+      border-radius: 999px;
+      transform: translateX(-50%) rotateX(-58deg) rotateZ(35deg);
+      background: rgba(255,255,255,.88);
+      box-shadow: inset 0 0 0 9px var(--cta), 0 20px 34px rgba(0,0,0,.2);
+    }
+    .qr-found {
+      position: absolute;
+      left: 50%;
+      top: calc(164px + env(safe-area-inset-top));
+      width: min(720px, calc(100% - 36px));
+      transform: translateX(-50%) translateY(-16px);
+      display: grid;
+      grid-template-columns: 84px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px;
+      background: rgba(255,255,255,.96);
+      border-radius: 30px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.32);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease, transform .25s ease;
+    }
+    .qr-found.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .qr-found img { width: 84px; height: 84px; border-radius: 20px; object-fit: contain; }
+    .qr-found strong { display: block; color: var(--text); font-size: 24px; line-height: 1.05; }
+    .qr-found span { display: block; color: var(--muted); margin-top: 4px; font-family: Roboto, system-ui, sans-serif; font-weight: 800; }
+    .qr-found a { color: var(--white); background: var(--cta); text-decoration: none; border-radius: 999px; padding: 14px 18px; font-weight: 950; white-space: nowrap; }
+    @media (orientation: portrait) {
+      .qr-logo { width: 150px; height: 150px; }
+      .qr-guide { width: min(780px, 78vw); top: 47%; }
+      .qr-found { top: calc(188px + env(safe-area-inset-top)); grid-template-columns: 96px 1fr; }
+      .qr-found a { grid-column: 1 / -1; text-align: center; padding: 17px; font-size: 20px; }
+      .qr-help { left: 24px; right: auto; bottom: calc(136px + env(safe-area-inset-bottom)); }
+      .qr-status { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <video id="qrCamera" class="qr-camera" autoplay muted playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback"></video>
+  <canvas id="qrCanvas" hidden></canvas>
+  <div class="qr-vignette" aria-hidden="true"></div>
+  <div class="qr-frame" id="qrFrame" aria-hidden="true"></div>
+  <div class="qr-house-wrap" id="qrHouse" aria-hidden="true">
+    <div class="qr-house">
+      <div class="house-roof"></div>
+      <div class="house-base"></div>
+      <div class="house-window"></div>
+      <div class="house-pin"></div>
+    </div>
+  </div>
+
+  <main class="qr-overlay" aria-label="QR-режим ДомGo">
+    <header class="qr-top">
+      <img src="assets/logo-domgo.png" alt="ДомGo" class="qr-logo" draggable="false" />
+      <a class="qr-close" href="index.html">Закрыть</a>
+    </header>
+
+    <div class="qr-guide" id="qrGuide" aria-hidden="true"></div>
+
+    <section class="qr-found" id="qrFound" aria-live="polite">
+      <img src="assets/logo-domgo.png" alt="ДомGo" draggable="false" />
+      <div>
+        <strong>QR-код распознан</strong>
+        <span>ул. Лесная, 14 · найден дом и 3 квартиры</span>
+      </div>
+      <a href="index.html?openHouse=1&source=qr">Посмотреть квартиры</a>
+    </section>
+
+    <a class="qr-help" href="assets/domgo-qr-print.png" download="domgo-qr-print.png">
+      <img src="assets/domgo-qr.png" alt="QR ДомGo" draggable="false" />
+      <span>QR-код<br>для печати</span>
+    </a>
+
+    <div class="qr-status" id="qrStatus">
+      Запускаем QR-камеру…
+      <small>Наведите планшет на QR-код ДомGo</small>
+      <button class="fallback-button" id="fallbackButton" type="button">Показать результат</button>
+    </div>
+  </main>
+
+  <script>
+    const QR_PAYLOAD = 'DOMGO:forest-14';
+    const video = document.getElementById('qrCamera');
+    const canvas = document.getElementById('qrCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const statusEl = document.getElementById('qrStatus');
+    const foundEl = document.getElementById('qrFound');
+    const frameEl = document.getElementById('qrFrame');
+    const houseEl = document.getElementById('qrHouse');
+    const fallbackButton = document.getElementById('fallbackButton');
+
+    let detector = null;
+    let scanning = false;
+    let found = false;
+    let lastSeenAt = 0;
+    let scanTimer = 0;
+
+    document.addEventListener('contextmenu', (event) => event.preventDefault());
+    document.addEventListener('gesturestart', (event) => event.preventDefault());
+    document.addEventListener('touchmove', (event) => { if (event.touches.length > 1) event.preventDefault(); }, { passive: false });
+    [video, canvas].forEach((el) => {
+      el.addEventListener('contextmenu', (event) => event.preventDefault());
+      el.addEventListener('dragstart', (event) => event.preventDefault());
+    });
+
+    function setStatus(main, hint = '') {
+      statusEl.firstChild.nodeValue = main;
+      const small = statusEl.querySelector('small');
+      if (small) small.textContent = hint;
+    }
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1920 },
+            height: { ideal: 1200 }
+          },
+          audio: false
+        });
+        video.srcObject = stream;
+        await video.play();
+        setStatus('Камера запущена.', 'Наведите планшет на QR-код ДомGo');
+        await initDetector();
+        scanning = true;
+        scanLoop();
+      } catch (error) {
+        setStatus('Не удалось запустить камеру.', 'Проверьте разрешение камеры и запуск через localhost/HTTPS');
+        fallbackButton.classList.add('is-visible');
+      }
+    }
+
+    async function initDetector() {
+      if ('BarcodeDetector' in window) {
+        try {
+          const formats = await BarcodeDetector.getSupportedFormats?.();
+          if (!formats || formats.includes('qr_code')) {
+            detector = new BarcodeDetector({ formats: ['qr_code'] });
+          }
+        } catch (_) {}
+      }
+      if (!detector && typeof jsQR !== 'function') {
+        setStatus('Камера запущена.', 'QR-сканер недоступен в этом браузере. Используйте Chrome/Android или кнопку ниже.');
+        fallbackButton.classList.add('is-visible');
+      }
+    }
+
+    async function scanLoop() {
+      if (!scanning) return;
+      const now = performance.now();
+      if (now - scanTimer > 220 && video.readyState >= 2) {
+        scanTimer = now;
+        try {
+          const result = await scanFrame();
+          if (result) handleQrResult(result);
+          else keepOrHideResult();
+        } catch (_) {
+          keepOrHideResult();
+        }
+      }
+      requestAnimationFrame(scanLoop);
+    }
+
+    async function scanFrame() {
+      if (detector) {
+        const codes = await detector.detect(video);
+        const code = codes.find((item) => item.rawValue && item.rawValue.trim() === QR_PAYLOAD) || codes[0];
+        if (!code) return null;
+        return {
+          value: code.rawValue,
+          bounds: code.boundingBox,
+          corners: code.cornerPoints || null,
+          source: 'native'
+        };
+      }
+      if (typeof jsQR === 'function') {
+        const w = video.videoWidth;
+        const h = video.videoHeight;
+        if (!w || !h) return null;
+        canvas.width = w;
+        canvas.height = h;
+        ctx.drawImage(video, 0, 0, w, h);
+        const image = ctx.getImageData(0, 0, w, h);
+        const code = jsQR(image.data, image.width, image.height, { inversionAttempts: 'attemptBoth' });
+        if (!code) return null;
+        const xs = [code.location.topLeftCorner.x, code.location.topRightCorner.x, code.location.bottomLeftCorner.x, code.location.bottomRightCorner.x];
+        const ys = [code.location.topLeftCorner.y, code.location.topRightCorner.y, code.location.bottomLeftCorner.y, code.location.bottomRightCorner.y];
+        return {
+          value: code.data,
+          bounds: { x: Math.min(...xs), y: Math.min(...ys), width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) },
+          source: 'jsqr'
+        };
+      }
+      return null;
+    }
+
+    function handleQrResult(result) {
+      if (result.value && result.value.trim() !== QR_PAYLOAD) {
+        setStatus('Найден QR-код, но это не код ДомGo.', 'Покажите QR-код из проекта ДомGo');
+        return;
+      }
+      lastSeenAt = performance.now();
+      found = true;
+      setStatus('QR-код ДомGo распознан.', '3D-заглушка закреплена поверх QR-кода');
+      foundEl.classList.add('is-visible');
+      positionOverQr(result.bounds);
+    }
+
+    function keepOrHideResult() {
+      if (!found) return;
+      if (performance.now() - lastSeenAt > 1400) {
+        setStatus('Наведите планшет на QR-код ДомGo.', 'Держите код целиком в рамке');
+        foundEl.classList.remove('is-visible');
+        frameEl.classList.remove('is-visible');
+        houseEl.classList.remove('is-visible');
+        found = false;
+      }
+    }
+
+    function mapVideoRect(bounds) {
+      const rect = video.getBoundingClientRect();
+      const vw = video.videoWidth || rect.width;
+      const vh = video.videoHeight || rect.height;
+      const videoRatio = vw / vh;
+      const rectRatio = rect.width / rect.height;
+      let renderedWidth, renderedHeight, offsetX, offsetY, scale;
+      if (videoRatio > rectRatio) {
+        renderedHeight = rect.height;
+        renderedWidth = renderedHeight * videoRatio;
+        offsetX = (rect.width - renderedWidth) / 2;
+        offsetY = 0;
+        scale = renderedWidth / vw;
+      } else {
+        renderedWidth = rect.width;
+        renderedHeight = renderedWidth / videoRatio;
+        offsetX = 0;
+        offsetY = (rect.height - renderedHeight) / 2;
+        scale = renderedHeight / vh;
+      }
+      return {
+        left: rect.left + offsetX + bounds.x * scale,
+        top: rect.top + offsetY + bounds.y * scale,
+        width: bounds.width * scale,
+        height: bounds.height * scale
+      };
+    }
+
+    function positionOverQr(bounds) {
+      const mapped = mapVideoRect(bounds || { x: video.videoWidth * .34, y: video.videoHeight * .32, width: video.videoWidth * .32, height: video.videoHeight * .32 });
+      const pad = 12;
+      frameEl.style.left = `${mapped.left - pad}px`;
+      frameEl.style.top = `${mapped.top - pad}px`;
+      frameEl.style.width = `${mapped.width + pad * 2}px`;
+      frameEl.style.height = `${mapped.height + pad * 2}px`;
+      frameEl.classList.add('is-visible');
+
+      const cx = mapped.left + mapped.width / 2;
+      const cy = mapped.top + mapped.height / 2;
+      const size = Math.max(180, Math.min(300, mapped.width * 1.16));
+      houseEl.style.width = `${size}px`;
+      houseEl.style.height = `${size}px`;
+      houseEl.style.left = `${cx}px`;
+      houseEl.style.top = `${cy}px`;
+      houseEl.style.marginLeft = `${-size / 2}px`;
+      houseEl.style.marginTop = `${-size * .9}px`;
+      houseEl.classList.add('is-visible');
+    }
+
+    fallbackButton.addEventListener('click', () => {
+      handleQrResult({ value: QR_PAYLOAD, bounds: null });
+      frameEl.classList.remove('is-visible');
+      houseEl.style.left = '50%';
+      houseEl.style.top = '48%';
+      houseEl.style.marginLeft = '-115px';
+      houseEl.style.marginTop = '-170px';
+      houseEl.classList.add('is-visible');
+    });
+
+    window.addEventListener('DOMContentLoaded', startCamera);
+  </script>
+</body>
+</html>
