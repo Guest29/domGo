@@ -14,30 +14,54 @@
   <link rel="icon" href="assets/icon-192.png" />
   <link rel="apple-touch-icon" href="assets/icon-192.png" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
 <body>
   <main class="app" aria-label="ДомGo">
     <section class="camera-screen" aria-label="Камера">
-      <video id="liveCamera" class="camera-layer live-camera" autoplay muted playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback" aria-label="Изображение с камеры"></video>
-      <video id="demoVideo" class="camera-layer demo-video" muted playsinline webkit-playsinline preload="metadata" disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback" aria-label="Демо-видео"></video>
+      <div class="ar-layer" id="arLayer" aria-label="Камера распознавания">
+        <a-scene
+          id="arScene"
+          embedded
+          renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
+          vr-mode-ui="enabled: false"
+          arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; patternRatio: 0.75; trackingMethod: best;">
+          <a-marker id="domgoMarker" type="pattern" url="assets/domgo-marker.patt" smooth="true" smoothCount="6" smoothTolerance="0.02" smoothThreshold="2">
+            <a-entity id="markerHouse" position="0 0 0" rotation="-90 0 0" scale="0.65 0.65 0.65">
+              <a-box position="0 0.34 0" depth="1.12" height="0.68" width="1.24" color="#f15044" shadow="cast: true"></a-box>
+              <a-box position="0 0.8 0" depth="1.2" height="0.16" width="1.36" color="#333333"></a-box>
+              <a-box position="-0.32 0.39 -0.58" depth="0.04" height="0.22" width="0.2" color="#ffffff"></a-box>
+              <a-box position="0.02 0.39 -0.58" depth="0.04" height="0.22" width="0.2" color="#ffffff"></a-box>
+              <a-box position="0.36 0.39 -0.58" depth="0.04" height="0.22" width="0.2" color="#ffffff"></a-box>
+              <a-box position="0 0.06 -0.61" depth="0.05" height="0.26" width="0.22" color="#333333"></a-box>
+              <a-cylinder position="0 -0.02 0" radius="0.78" height="0.03" color="#000000" opacity="0.22"></a-cylinder>
+            </a-entity>
+          </a-marker>
+          <a-entity camera></a-entity>
+        </a-scene>
+      </div>
+
+      <video id="demoVideo" class="camera-layer demo-video is-hidden" muted playsinline webkit-playsinline preload="metadata" disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback" aria-label="Демо-ролик"></video>
+      <canvas id="scanCanvas" class="scan-canvas" aria-hidden="true"></canvas>
       <div class="camera-vignette" aria-hidden="true"></div>
-      <div class="scan-grid" aria-hidden="true"></div>
 
       <header class="minimal-topbar" aria-label="Верхняя панель">
         <img src="assets/logo-domgo.png" alt="ДомGo" class="brand-logo" draggable="false" />
       </header>
 
-      <p class="scan-status" id="scanStatus" aria-live="polite">Камера запускается…</p>
+      <p class="scan-status" id="scanStatus" aria-live="polite">Наведите камеру на объект</p>
 
-      <div class="start-actions" id="startActions">
-        <button class="start-demo-button" id="startDemoButton" type="button">Запустить демо</button>
-        <a class="ar-mode-link" href="ar.html">QR-режим</a>
-      </div>
+      <button class="demo-launch-button" id="startDemoButton" type="button">Запустить демо</button>
 
-      <section class="demo-selector is-hidden" id="demoSelector" aria-label="Демо-ролики">
-        <p class="demo-selector-title">Демо-ролики</p>
-        <div class="demo-options" id="demoOptions"></div>
-        <button class="return-camera-button" id="returnCameraButton" type="button">К камере</button>
+      <section class="demo-panel is-hidden" id="demoPanel" aria-label="Демо-ролики">
+        <span class="demo-panel-title">Демо-ролики</span>
+        <div class="demo-panel-buttons">
+          <button class="demo-button" type="button" data-demo="0">Ролик 1</button>
+          <button class="demo-button" type="button" data-demo="1">Ролик 2</button>
+          <button class="demo-button" type="button" data-demo="2">Ролик 3</button>
+        </div>
+        <button class="demo-camera-button" id="returnCameraButton" type="button">К камере</button>
       </section>
 
       <section class="found-panel is-hidden" id="foundPanel" aria-live="polite" aria-label="Найденный дом"></section>
@@ -71,15 +95,6 @@
         <div class="ai-output" id="aiOutput" aria-live="polite"></div>
       </article>
     </section>
-
-    <aside class="app-push is-hidden" id="appPush" aria-label="Уведомление">
-      <img src="assets/logo-domgo.png" alt="ДомGo" class="app-push-logo" draggable="false" />
-      <div>
-        <strong>Рядом найдена квартира</strong>
-        <span>Откройте ДомGo, чтобы посмотреть варианты поблизости.</span>
-      </div>
-      <button id="pushOpenButton" type="button">Посмотреть</button>
-    </aside>
   </main>
   <script src="app.js" defer></script>
 </body>

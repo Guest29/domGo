@@ -1,23 +1,16 @@
 {
   "name": "ДомGo",
   "short_name": "ДомGo",
-  "description": "Прототип приложения для поиска квартир по камере и QR-коду.",
+  "description": "Прототип приложения для подбора квартир по наведению камеры на объект.",
   "start_url": "./index.html",
   "scope": "./",
-  "display": "fullscreen",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "orientation": "portrait",
   "background_color": "#333333",
   "theme_color": "#333333",
-  "orientation": "portrait",
   "icons": [
     { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ],
-  "shortcuts": [
-    {
-      "name": "QR-режим",
-      "short_name": "QR",
-      "url": "./ar.html",
-      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    }
   ]
 }

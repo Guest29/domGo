@@ -1,113 +1,82 @@
-const ASSET = "assets/";
-const DETECT_DELAY_MS = 2000;
+const DEMO_RECOGNITION_DELAY = 2000;
 
-const scenarios = [
+const buildings = [
   {
-    id: "lesnaya",
-    label: "Ролик 1",
-    video: `${ASSET}demo-1.mp4`,
-    building: {
-      id: "forest-14",
-      address: "ул. Лесная, 14",
-      district: "Северный квартал",
-      type: "монолитный дом",
-      year: 2018,
-      floors: 17,
-      image: `${ASSET}house-1.png`,
-      confidence: 96,
-      relevance: 92,
-      avgPrice: "17,4 млн ₽",
-      summary: "Тихий дом рядом с метро, школами и зелёной зоной. Хорошо подходит для семейного сценария и ежедневных поездок по городу.",
-      infrastructure: { metro: 6, kindergartens: 5, schools: 3, parks: 2 },
-      apartments: [
-        { id: "f1", image: `${ASSET}apartment-1.png`, title: "2-комнатная с видом во двор", price: 16900000, marketLow: 15800000, marketHigh: 18100000, rooms: 2, area: 54, floor: 8, floors: 17, metro: 6, repair: "ready", schools: true, park: true, balcony: true, parking: true, relevance: 94, description: "Светлая квартира с изолированными комнатами, свежим ремонтом и тихими окнами во двор." },
-        { id: "f2", image: `${ASSET}apartment-2.png`, title: "3-комнатная для семьи", price: 22300000, marketLow: 20700000, marketHigh: 23800000, rooms: 3, area: 74, floor: 12, floors: 17, metro: 7, repair: "cosmetic", schools: true, park: true, balcony: true, parking: true, relevance: 97, description: "Большая кухня-гостиная, два санузла, вид на парк и закрытый двор." },
-        { id: "f3", image: `${ASSET}apartment-3.png`, title: "1-комнатная у метро", price: 13600000, marketLow: 12800000, marketHigh: 14500000, rooms: 1, area: 42, floor: 5, floors: 17, metro: 5, repair: "ready", schools: false, park: true, balcony: false, parking: false, relevance: 83, description: "Компактный вариант для одного человека или пары с быстрым выходом к метро." }
-      ]
-    }
+    id: "forest-14",
+    address: "ул. Лесная, 14",
+    district: "Северный квартал",
+    type: "монолитный дом",
+    year: 2016,
+    avgPrice: "17,4 млн ₽",
+    relevance: 92,
+    confidence: 96,
+    image: "assets/house-1.png",
+    video: "assets/demo-1.mp4",
+    summary: "Тихий дом рядом с метро, школами и зелёной зоной. Хорошо подходит для семейного сценария.",
+    infrastructure: { kindergartens: 5, schools: 3, metro: 6, parks: 2 },
+    apartments: [
+      { id: "f1", image: "assets/apartment-1.png", title: "Светлая 2-комнатная квартира", price: "16,9 млн ₽", ppm: "312 тыс. ₽/м²", rooms: 2, area: 54, floor: 8, floors: 17, metro: 6, repair: "ready", balcony: true, parking: true, schools: true, park: true, market: 46, relevance: 94, desc: "Окна во двор, свежий ремонт, удобная планировка с изолированными комнатами.", pluses: ["6 минут пешком до метро", "Детский сад во дворе", "Окна на тихую сторону"], minuses: ["Нет отдельной гардеробной", "Средняя цена за метр выше района"] },
+      { id: "f2", image: "assets/apartment-2.png", title: "3-комнатная квартира для семьи", price: "22,3 млн ₽", ppm: "301 тыс. ₽/м²", rooms: 3, area: 74, floor: 12, floors: 17, metro: 8, repair: "cosmetic", balcony: true, parking: true, schools: true, park: true, market: 38, relevance: 97, desc: "Большая кухня-гостиная, два санузла, вид на парк и закрытый двор.", pluses: ["3 школы в радиусе 900 м", "Парк в 4 минутах", "Подземный паркинг"], minuses: ["Высокий этаж может не подойти всем", "Нужна косметика в спальнях"] },
+      { id: "f3", image: "assets/apartment-3.png", title: "1-комнатная рядом с метро", price: "13,6 млн ₽", ppm: "324 тыс. ₽/м²", rooms: 1, area: 42, floor: 5, floors: 17, metro: 5, repair: "ready", balcony: false, parking: true, schools: false, park: true, market: 68, relevance: 82, desc: "Компактная квартира для одного человека или пары. Быстрый выход к метро.", pluses: ["Лучшее время до метро", "Готова к заселению", "Вид во двор"], minuses: ["Мало места для семьи", "Один санузел"] }
+    ]
   },
   {
-    id: "mira",
-    label: "Ролик 2",
-    video: `${ASSET}demo-2.mp4`,
-    building: {
-      id: "mir-18",
-      address: "пр. Мира, 18",
-      district: "Деловой центр",
-      type: "кирпичный дом",
-      year: 2012,
-      floors: 12,
-      image: `${ASSET}house-2.png`,
-      confidence: 93,
-      relevance: 86,
-      avgPrice: "14,8 млн ₽",
-      summary: "Дом в активной части района: транспорт, кафе, офисы и быстрый выезд на ключевые магистрали.",
-      infrastructure: { metro: 11, kindergartens: 2, schools: 2, parks: 1 },
-      apartments: [
-        { id: "m1", image: `${ASSET}apartment-4.png`, title: "2-комнатная с хорошей ценой", price: 14200000, marketLow: 13900000, marketHigh: 16400000, rooms: 2, area: 54, floor: 4, floors: 12, metro: 11, repair: "cosmetic", schools: true, park: false, balcony: true, parking: false, relevance: 88, description: "Базовый ремонт, удобный выезд на проспект и хорошая цена за метр." },
-        { id: "m2", image: `${ASSET}apartment-5.png`, title: "3-комнатная на высоком этаже", price: 18100000, marketLow: 16900000, marketHigh: 19400000, rooms: 3, area: 64, floor: 9, floors: 12, metro: 10, repair: "ready", schools: true, park: false, balcony: true, parking: true, relevance: 84, description: "Три изолированные комнаты, балкон и хорошие виды на город." },
-        { id: "m3", image: `${ASSET}apartment-6.png`, title: "Студия для старта", price: 9200000, marketLow: 8800000, marketHigh: 10300000, rooms: 1, area: 31, floor: 6, floors: 12, metro: 9, repair: "none", schools: false, park: false, balcony: false, parking: false, relevance: 76, description: "Небольшая квартира с потенциалом ремонта под себя и низким входным бюджетом." }
-      ]
-    }
+    id: "mir-18",
+    address: "пр. Мира, 18",
+    district: "Деловой центр",
+    type: "кирпичный дом",
+    year: 2008,
+    avgPrice: "14,8 млн ₽",
+    relevance: 84,
+    confidence: 93,
+    image: "assets/house-2.png",
+    video: "assets/demo-2.mp4",
+    summary: "Дом в активной части района: много транспорта, кафе и офисов. Подходит тем, кому важна мобильность.",
+    infrastructure: { kindergartens: 2, schools: 2, metro: 11, parks: 1 },
+    apartments: [
+      { id: "m1", image: "assets/apartment-4.png", title: "2-комнатная с хорошей ценой", price: "14,2 млн ₽", ppm: "263 тыс. ₽/м²", rooms: 2, area: 54, floor: 4, floors: 12, metro: 11, repair: "cosmetic", balcony: true, parking: false, schools: true, park: false, market: 24, relevance: 89, desc: "Базовый ремонт, окна на улицу, удобный выезд на проспект.", pluses: ["Хорошая цена за метр", "Рядом остановки", "Кирпичные стены"], minuses: ["До метро 11 минут", "Шумнее, чем во дворах"] },
+      { id: "m2", image: "assets/apartment-5.png", title: "3-комнатная на высоком этаже", price: "18,1 млн ₽", ppm: "282 тыс. ₽/м²", rooms: 3, area: 64, floor: 9, floors: 12, metro: 12, repair: "none", balcony: true, parking: false, schools: true, park: false, market: 55, relevance: 82, desc: "Три изолированные комнаты, балкон, хорошие виды на город.", pluses: ["Подходит семье с ребёнком", "Балкон", "Много магазинов рядом"], minuses: ["Нужен ремонт", "Парк не у дома"] },
+      { id: "m3", image: "assets/apartment-6.png", title: "Студия в центре района", price: "10,8 млн ₽", ppm: "300 тыс. ₽/м²", rooms: 1, area: 36, floor: 6, floors: 12, metro: 9, repair: "design", balcony: false, parking: false, schools: false, park: false, market: 64, relevance: 76, desc: "Компактный вариант для жизни рядом с офисной и транспортной инфраструктурой.", pluses: ["Центр района", "Дизайнерский ремонт", "Ликвидный формат"], minuses: ["Мало площади", "Нет паркинга"] }
+    ]
   },
   {
-    id: "sadovaya",
-    label: "Ролик 3",
-    video: `${ASSET}demo-3.mp4`,
-    building: {
-      id: "sadovaya-7",
-      address: "ул. Садовая, 7",
-      district: "Парковый район",
-      type: "сталинский дом",
-      year: 1961,
-      floors: 8,
-      image: `${ASSET}house-3.png`,
-      confidence: 89,
-      relevance: 90,
-      avgPrice: "20,6 млн ₽",
-      summary: "Зелёный район, высокие потолки и просторные квартиры рядом с парком и школами.",
-      infrastructure: { metro: 15, kindergartens: 4, schools: 4, parks: 3 },
-      apartments: [
-        { id: "s1", image: `${ASSET}apartment-7.png`, title: "3-комнатная у парка", price: 19700000, marketLow: 18600000, marketHigh: 21400000, rooms: 3, area: 72, floor: 3, floors: 8, metro: 15, repair: "cosmetic", schools: true, park: true, balcony: false, parking: false, relevance: 96, description: "Высокие потолки, две спальни и окна на зелёный двор." },
-        { id: "s2", image: `${ASSET}apartment-8.png`, title: "4-комнатная для большой семьи", price: 24900000, marketLow: 23200000, marketHigh: 26300000, rooms: 4, area: 88, floor: 6, floors: 8, metro: 15, repair: "designer", schools: true, park: true, balcony: true, parking: false, relevance: 98, description: "Редкий просторный формат: кабинет, две спальни и большая гостиная." },
-        { id: "s3", image: `${ASSET}apartment-9.png`, title: "2-комнатная в зелёном районе", price: 15400000, marketLow: 15000000, marketHigh: 17600000, rooms: 2, area: 53, floor: 2, floors: 8, metro: 14, repair: "none", schools: true, park: true, balcony: false, parking: false, relevance: 87, description: "Баланс цены и района: хороший вариант для ремонта под себя." }
-      ]
-    }
+    id: "sadovaya-7",
+    address: "ул. Садовая, 7",
+    district: "Парковый район",
+    type: "сталинский дом",
+    year: 1958,
+    avgPrice: "20,6 млн ₽",
+    relevance: 88,
+    confidence: 89,
+    image: "assets/house-3.png",
+    video: "assets/demo-3.mp4",
+    summary: "Зелёный район, высокие потолки и просторные квартиры. Сильный вариант для тех, кто ценит тишину и парк.",
+    infrastructure: { kindergartens: 4, schools: 4, metro: 15, parks: 3 },
+    apartments: [
+      { id: "s1", image: "assets/apartment-7.png", title: "3-комнатная у парка", price: "19,7 млн ₽", ppm: "274 тыс. ₽/м²", rooms: 3, area: 72, floor: 3, floors: 8, metro: 15, repair: "cosmetic", balcony: true, parking: false, schools: true, park: true, market: 35, relevance: 93, desc: "Высокие потолки, две спальни, окна на зелёный двор.", pluses: ["Парк через дорогу", "4 школы рядом", "Потолки 3,1 м"], minuses: ["До метро 15 минут", "Нет подземного паркинга"] },
+      { id: "s2", image: "assets/apartment-8.png", title: "Просторная 4-комнатная", price: "24,9 млн ₽", ppm: "283 тыс. ₽/м²", rooms: 4, area: 88, floor: 6, floors: 8, metro: 16, repair: "ready", balcony: true, parking: false, schools: true, park: true, market: 72, relevance: 91, desc: "Редкий формат для большой семьи: кабинет, две спальни и большая гостиная.", pluses: ["Много комнат", "Тихий двор", "Сильная школьная инфраструктура"], minuses: ["Самый высокий бюджет", "Метро не рядом"] },
+      { id: "s3", image: "assets/apartment-9.png", title: "2-комнатная в зелёном районе", price: "15,4 млн ₽", ppm: "291 тыс. ₽/м²", rooms: 2, area: 53, floor: 2, floors: 8, metro: 14, repair: "none", balcony: false, parking: false, schools: true, park: true, market: 29, relevance: 86, desc: "Квартира под ремонт с видом на двор, хороший баланс цены и района.", pluses: ["Рядом парк", "Невысокий этаж", "Хороший бюджет для района"], minuses: ["Нужна замена кухни", "Метро 14 минут"] }
+    ]
   }
 ];
 
-const refs = {
-  liveCamera: document.querySelector("#liveCamera"),
-  demoVideo: document.querySelector("#demoVideo"),
-  scanStatus: document.querySelector("#scanStatus"),
-  startActions: document.querySelector("#startActions"),
-  startDemoButton: document.querySelector("#startDemoButton"),
-  demoSelector: document.querySelector("#demoSelector"),
-  demoOptions: document.querySelector("#demoOptions"),
-  returnCameraButton: document.querySelector("#returnCameraButton"),
-  foundPanel: document.querySelector("#foundPanel"),
-  fullUi: document.querySelector("#fullUi"),
-  buildingContent: document.querySelector("#buildingContent"),
-  closeFullUi: document.querySelector("#closeFullUi"),
-  apartmentDrawer: document.querySelector("#apartmentDrawer"),
-  drawerBackdrop: document.querySelector("#drawerBackdrop"),
-  drawerCard: document.querySelector("#drawerCard"),
-  aiPanel: document.querySelector("#aiPanel"),
-  aiBackdrop: document.querySelector("#aiBackdrop"),
-  closeAi: document.querySelector("#closeAi"),
-  aiOutput: document.querySelector("#aiOutput"),
-  appPush: document.querySelector("#appPush"),
-  pushOpenButton: document.querySelector("#pushOpenButton")
+const repairLabels = {
+  any: "любой",
+  none: "без ремонта",
+  cosmetic: "косметический",
+  ready: "готово к заселению",
+  design: "дизайнерский"
 };
 
 const state = {
-  activeScenario: null,
-  activeApartment: null,
-  detectTimer: null,
+  mode: "camera",
+  activeDemo: 0,
+  activeBuildingId: null,
+  foundByCamera: false,
   filtersOpen: false,
   aiTimer: null,
+  demoTimer: null,
   filters: {
-    preset: "any",
     minRooms: 1,
     metroMax: 20,
     repair: "any",
@@ -119,167 +88,144 @@ const state = {
   }
 };
 
-function money(value) {
-  return new Intl.NumberFormat("ru-RU").format(value) + " ₽";
+const refs = {
+  arLayer: document.querySelector("#arLayer"),
+  arScene: document.querySelector("#arScene"),
+  marker: document.querySelector("#domgoMarker"),
+  demoVideo: document.querySelector("#demoVideo"),
+  scanStatus: document.querySelector("#scanStatus"),
+  startDemoButton: document.querySelector("#startDemoButton"),
+  demoPanel: document.querySelector("#demoPanel"),
+  returnCameraButton: document.querySelector("#returnCameraButton"),
+  foundPanel: document.querySelector("#foundPanel"),
+  fullUi: document.querySelector("#fullUi"),
+  closeFullUi: document.querySelector("#closeFullUi"),
+  buildingContent: document.querySelector("#buildingContent"),
+  apartmentDrawer: document.querySelector("#apartmentDrawer"),
+  drawerBackdrop: document.querySelector("#drawerBackdrop"),
+  drawerCard: document.querySelector("#drawerCard"),
+  aiPanel: document.querySelector("#aiPanel"),
+  aiBackdrop: document.querySelector("#aiBackdrop"),
+  closeAi: document.querySelector("#closeAi"),
+  aiOutput: document.querySelector("#aiOutput")
+};
+
+function getBuilding(id = state.activeBuildingId) {
+  return buildings.find((building) => building.id === id) || buildings[0];
 }
 
-function priceShort(value) {
-  return (value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1).replace(".", ",") + " млн ₽";
+function getApartment(apartmentId) {
+  for (const building of buildings) {
+    const apartment = building.apartments.find((item) => item.id === apartmentId);
+    if (apartment) return { building, apartment };
+  }
+  return { building: buildings[0], apartment: buildings[0].apartments[0] };
 }
 
-function repairLabel(value) {
-  return {
-    any: "любой",
-    none: "без ремонта",
-    cosmetic: "косметический",
-    ready: "готово к заселению",
-    designer: "дизайнерский"
-  }[value] || value;
-}
-
-function clamp(num, min, max) {
-  return Math.max(min, Math.min(max, num));
-}
-
-function getMarket(apartment) {
-  const min = apartment.marketLow;
-  const max = apartment.marketHigh;
-  const price = apartment.price;
-  const pos = clamp(((price - min) / (max - min)) * 52 + 24, 4, 96);
-  const type = price < min ? "low" : price > max ? "high" : "mid";
-  const label = type === "low" ? "ниже рынка" : type === "high" ? "выше рынка" : "рыночная цена";
-  return { pos, type, label };
-}
-
-function calcMatch(apartment) {
-  let score = apartment.relevance;
-  const f = state.filters;
-  if (apartment.rooms < Number(f.minRooms)) score -= 14;
-  if (apartment.metro > Number(f.metroMax)) score -= 12;
-  if (f.repair !== "any" && apartment.repair !== f.repair) score -= 10;
-  if (f.schools && !apartment.schools) score -= 10;
-  if (f.park && !apartment.park) score -= 8;
-  if (f.balcony && !apartment.balcony) score -= 6;
-  if (f.parking && !apartment.parking) score -= 6;
-  if (f.middleFloor && (apartment.floor === 1 || apartment.floor === apartment.floors)) score -= 8;
-  return clamp(Math.round(score), 52, 99);
-}
-
-function matchCircle(percent, size = "") {
-  return `<div class="match-circle ${size}" style="--percent:${percent}"><div><strong>${percent}%</strong><span>совпадение</span></div></div>`;
-}
-
-function marketGauge(apartment) {
-  const market = getMarket(apartment);
+function matchCircle(value, extraClass = "") {
+  const safe = Math.max(0, Math.min(100, Number(value) || 0));
   return `
-    <div class="market-gauge market-${market.type}">
-      <div class="market-head"><span>Оценка цены</span><strong>${market.label}</strong></div>
+    <div class="match-circle ${extraClass}" style="--value:${safe}">
+      <div class="match-circle-inner">
+        <strong class="match-value">${safe}%</strong>
+        <span class="match-label">совпадение</span>
+      </div>
+    </div>`;
+}
+
+function marketMeta(value) {
+  if (value < 34) return { label: "ниже рынка", color: "var(--green)" };
+  if (value < 67) return { label: "рыночная цена", color: "var(--yellow)" };
+  return { label: "выше рынка", color: "var(--orange)" };
+}
+
+function marketMeter(apartment) {
+  const meta = marketMeta(apartment.market);
+  return `
+    <div class="market-meter" style="--market:${apartment.market}; --marker-color:${meta.color}">
       <div class="market-labels"><span>низкая</span><span>рыночная цена</span><span>высокая</span></div>
-      <div class="market-track"><span class="market-dot" style="left:${market.pos}%"><b>${priceShort(apartment.price)}</b></span></div>
-      <div class="market-values"><span>${priceShort(apartment.marketLow)}</span><span>${priceShort(apartment.marketHigh)}</span></div>
-    </div>
-  `;
+      <div class="market-track"><span class="market-marker"></span></div>
+      <span class="market-note">${meta.label}</span>
+    </div>`;
 }
 
-function setVisible(el, visible) {
-  el.classList.toggle("is-hidden", !visible);
+function setStatus(text, type = "") {
+  refs.scanStatus.textContent = text;
+  refs.scanStatus.classList.toggle("is-success", type === "success");
+  refs.scanStatus.classList.toggle("is-muted", type === "muted");
 }
 
-async function startCamera() {
-  if (!navigator.mediaDevices?.getUserMedia) {
-    refs.scanStatus.textContent = "Камера недоступна. Можно запустить демо.";
-    return;
-  }
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
-    refs.liveCamera.srcObject = stream;
-    await refs.liveCamera.play();
-    refs.scanStatus.textContent = "Наведите камеру на дом";
-  } catch (error) {
-    refs.scanStatus.textContent = "Камера не запущена. Проверьте разрешение браузера.";
-  }
+function showFoundPanel(building, source = "camera") {
+  state.activeBuildingId = building.id;
+  state.foundByCamera = source === "camera";
+  refs.foundPanel.innerHTML = `
+    <div class="found-card">
+      <img class="found-image" src="${building.image}" alt="${building.address}" draggable="false" />
+      <div class="found-info">
+        <span class="found-kicker">Дом найден</span>
+        <h2>${building.address}</h2>
+        <p>${building.district} · ${building.apartments.length} квартиры в продаже</p>
+        <button class="open-house-button" type="button" data-open-house="${building.id}">Посмотреть квартиры</button>
+      </div>
+      ${matchCircle(building.relevance)}
+    </div>`;
+  refs.foundPanel.classList.remove("is-hidden");
+  setStatus("Дом найден", "success");
 }
 
-function showPush() {
-  window.setTimeout(() => setVisible(refs.appPush, true), 800);
+function hideFoundPanel() {
+  refs.foundPanel.classList.add("is-hidden");
+  refs.foundPanel.innerHTML = "";
 }
 
-function renderDemoButtons() {
-  refs.demoOptions.innerHTML = scenarios.map((item, index) => `
-    <button class="demo-option" type="button" data-scenario="${item.id}">${index + 1}</button>
-  `).join("");
+function setMode(mode) {
+  state.mode = mode;
+  document.body.classList.toggle("demo-mode", mode === "demo");
+  refs.arLayer.classList.toggle("is-hidden", mode !== "camera");
+  refs.demoVideo.classList.toggle("is-hidden", mode !== "demo");
+  refs.startDemoButton.classList.toggle("is-hidden", mode !== "camera");
+  refs.demoPanel.classList.toggle("is-hidden", mode !== "demo");
 }
 
-function startDemo() {
-  setVisible(refs.startActions, false);
-  setVisible(refs.demoSelector, true);
-  selectScenario(scenarios[0].id);
-}
-
-function selectScenario(id) {
-  const scenario = scenarios.find((item) => item.id === id) || scenarios[0];
-  state.activeScenario = scenario;
-  state.activeApartment = null;
-  window.clearTimeout(state.detectTimer);
-  setVisible(refs.foundPanel, false);
-  refs.demoOptions.querySelectorAll("button").forEach((btn) => btn.classList.toggle("is-active", btn.dataset.scenario === scenario.id));
-  refs.scanStatus.textContent = "Загружаем ролик…";
-  refs.demoVideo.classList.add("is-visible");
-  refs.demoVideo.loop = false;
+function startDemo(index = 0) {
+  window.clearTimeout(state.demoTimer);
+  state.activeDemo = Number(index) || 0;
+  state.foundByCamera = false;
+  const building = buildings[state.activeDemo] || buildings[0];
+  state.activeBuildingId = building.id;
+  hideFoundPanel();
+  setMode("demo");
+  setStatus("Воспроизводится демо-ролик", "muted");
+  document.querySelectorAll(".demo-button").forEach((button) => {
+    button.classList.toggle("is-active", Number(button.dataset.demo) === state.activeDemo);
+  });
   refs.demoVideo.pause();
-  refs.demoVideo.removeAttribute("src");
-  refs.demoVideo.src = scenario.video;
+  refs.demoVideo.loop = false;
+  refs.demoVideo.src = building.video;
   refs.demoVideo.currentTime = 0;
   refs.demoVideo.load();
-  const startPlayback = async () => {
-    refs.demoVideo.removeEventListener("canplay", startPlayback);
-    try {
-      await refs.demoVideo.play();
-      refs.scanStatus.textContent = "Сканируем дом…";
-      state.detectTimer = window.setTimeout(() => showFoundPanel(), DETECT_DELAY_MS);
-    } catch (error) {
-      refs.scanStatus.textContent = `Не удалось запустить видео: ${scenario.video}`;
-    }
-  };
-  refs.demoVideo.addEventListener("canplay", startPlayback);
+  const playPromise = refs.demoVideo.play();
+  if (playPromise?.catch) playPromise.catch(() => setStatus("Нажмите на экран, чтобы запустить видео", "muted"));
+  state.demoTimer = window.setTimeout(() => {
+    if (state.mode === "demo" && state.activeDemo === index) showFoundPanel(building, "demo");
+  }, DEMO_RECOGNITION_DELAY);
 }
 
 function returnToCamera() {
-  window.clearTimeout(state.detectTimer);
-  state.activeScenario = null;
-  setVisible(refs.demoSelector, false);
-  setVisible(refs.foundPanel, false);
-  setVisible(refs.startActions, true);
-  closeFullUi();
-  closeDrawer();
-  closeAi();
+  window.clearTimeout(state.demoTimer);
   refs.demoVideo.pause();
   refs.demoVideo.removeAttribute("src");
-  refs.demoVideo.classList.remove("is-visible");
-  refs.scanStatus.textContent = "Наведите камеру на дом";
+  refs.demoVideo.load();
+  hideFoundPanel();
+  state.activeBuildingId = null;
+  state.foundByCamera = false;
+  setMode("camera");
+  setStatus("Наведите камеру на объект", "");
 }
 
-function showFoundPanel() {
-  if (!state.activeScenario) return;
-  const building = state.activeScenario.building;
-  refs.foundPanel.innerHTML = `
-    <button class="found-panel-button" type="button" aria-label="Открыть меню дома">
-      <img src="${building.image}" alt="${building.address}" draggable="false" />
-      <div class="found-panel-text">
-        <span>Дом найден</span>
-        <strong>${building.address}</strong>
-        <small>${building.apartments.length} квартиры в продаже · ${building.district}</small>
-      </div>
-      ${matchCircle(building.relevance, "small")}
-    </button>
-  `;
-  refs.scanStatus.textContent = "Дом найден. Откройте карточку или выберите другой ролик.";
-  setVisible(refs.foundPanel, true);
-}
-
-function openFullUi() {
-  if (!state.activeScenario) return;
-  renderBuilding();
+function openFullUi(buildingId = state.activeBuildingId) {
+  state.activeBuildingId = buildingId || buildings[0].id;
+  renderBuildingUi();
   refs.fullUi.classList.add("is-open");
   refs.fullUi.setAttribute("aria-hidden", "false");
 }
@@ -289,148 +235,188 @@ function closeFullUi() {
   refs.fullUi.setAttribute("aria-hidden", "true");
 }
 
-function applyPreset(preset) {
-  const presets = {
-    any: { minRooms: 1, metroMax: 20, repair: "any", schools: false, park: false, balcony: false, parking: false, middleFloor: false },
-    family: { minRooms: 2, metroMax: 15, repair: "any", schools: true, park: true, balcony: true, parking: false, middleFloor: true },
-    metro: { minRooms: 1, metroMax: 8, repair: "any", schools: false, park: false, balcony: false, parking: false, middleFloor: false },
-    ready: { minRooms: 1, metroMax: 20, repair: "ready", schools: false, park: false, balcony: false, parking: false, middleFloor: false },
-    parking: { minRooms: 1, metroMax: 20, repair: "any", schools: false, park: false, balcony: false, parking: true, middleFloor: false }
-  };
-  Object.assign(state.filters, presets[preset] || presets.any, { preset });
-  renderBuilding();
+function scoreApartment(apartment) {
+  let score = apartment.relevance;
+  if (apartment.rooms < state.filters.minRooms) score -= 18;
+  if (apartment.metro > state.filters.metroMax) score -= 16;
+  if (state.filters.repair !== "any" && apartment.repair !== state.filters.repair) score -= 12;
+  if (state.filters.schools && !apartment.schools) score -= 10;
+  if (state.filters.park && !apartment.park) score -= 8;
+  if (state.filters.balcony && !apartment.balcony) score -= 8;
+  if (state.filters.parking && !apartment.parking) score -= 8;
+  if (state.filters.middleFloor && (apartment.floor === 1 || apartment.floor === apartment.floors)) score -= 8;
+  return Math.max(42, Math.min(99, score));
 }
 
-function getFilteredApartments(building) {
-  const f = state.filters;
-  return building.apartments
-    .filter((apt) => apt.rooms >= Number(f.minRooms))
-    .filter((apt) => apt.metro <= Number(f.metroMax))
-    .filter((apt) => f.repair === "any" || apt.repair === f.repair)
-    .filter((apt) => !f.schools || apt.schools)
-    .filter((apt) => !f.park || apt.park)
-    .filter((apt) => !f.balcony || apt.balcony)
-    .filter((apt) => !f.parking || apt.parking)
-    .filter((apt) => !f.middleFloor || (apt.floor !== 1 && apt.floor !== apt.floors))
-    .sort((a, b) => calcMatch(b) - calcMatch(a));
+function passesFilters(apartment) {
+  return apartment.rooms >= state.filters.minRooms
+    && apartment.metro <= state.filters.metroMax
+    && (state.filters.repair === "any" || apartment.repair === state.filters.repair)
+    && (!state.filters.schools || apartment.schools)
+    && (!state.filters.park || apartment.park)
+    && (!state.filters.balcony || apartment.balcony)
+    && (!state.filters.parking || apartment.parking)
+    && (!state.filters.middleFloor || (apartment.floor !== 1 && apartment.floor !== apartment.floors));
 }
 
-function filterChipText() {
-  const f = state.filters;
-  const chips = [`от ${f.minRooms} комн.`, `метро до ${f.metroMax} мин`];
-  if (f.repair !== "any") chips.push(repairLabel(f.repair));
-  if (f.schools) chips.push("школы рядом");
-  if (f.park) chips.push("парк рядом");
-  if (f.balcony) chips.push("балкон");
-  if (f.parking) chips.push("паркинг");
-  if (f.middleFloor) chips.push("не крайний этаж");
-  return chips.map((chip) => `<span>${chip}</span>`).join("");
+function activeFilterChips() {
+  const chips = [`от ${state.filters.minRooms} комн.`, `метро до ${state.filters.metroMax} мин`];
+  if (state.filters.repair !== "any") chips.push(repairLabels[state.filters.repair]);
+  if (state.filters.schools) chips.push("школы и детсады");
+  if (state.filters.park) chips.push("парк рядом");
+  if (state.filters.balcony) chips.push("балкон");
+  if (state.filters.parking) chips.push("паркинг");
+  if (state.filters.middleFloor) chips.push("не первый/последний");
+  return chips.map((chip) => `<span class="active-filter-chip">${chip}</span>`).join("");
 }
 
-function renderBuilding() {
-  const building = state.activeScenario.building;
-  const apartments = getFilteredApartments(building);
+function renderBuildingUi() {
+  const building = getBuilding();
+  const sortedApartments = [...building.apartments]
+    .map((apartment) => ({ apartment, score: scoreApartment(apartment), passes: passesFilters(apartment) }))
+    .sort((a, b) => Number(b.passes) - Number(a.passes) || b.score - a.score);
+
   refs.buildingContent.innerHTML = `
     <section class="building-hero">
-      <img src="${building.image}" alt="${building.address}" draggable="false" />
-      <div class="building-hero-info">
-        <p class="eyebrow">Найденный дом</p>
-        <h1>${building.address}</h1>
-        <p>${building.summary}</p>
-        <div class="building-stats">
-          <span>${building.type}</span><span>${building.year}</span><span>${building.floors} этажей</span><span>${building.avgPrice}</span>
+      <article class="building-main-card">
+        <img class="building-photo" src="${building.image}" alt="${building.address}" draggable="false" />
+        <div>
+          <p class="eyebrow">Найденный объект</p>
+          <h1>${building.address}</h1>
+          <p class="muted">${building.summary}</p>
+          <div class="building-meta">
+            <span class="meta-chip">${building.district}</span>
+            <span class="meta-chip">${building.type}</span>
+            <span class="meta-chip">${building.year}</span>
+            <span class="meta-chip">средняя цена ${building.avgPrice}</span>
+          </div>
         </div>
+      </article>
+      <aside class="building-score-card">
+        ${matchCircle(building.relevance, "is-large")}
+        <p>Оценка дома по расположению, инфраструктуре и доступным квартирам.</p>
+      </aside>
+    </section>
+
+    <section class="info-grid">
+      <div class="info-card"><strong>${building.infrastructure.kindergartens}</strong><span>детсадов рядом</span></div>
+      <div class="info-card"><strong>${building.infrastructure.schools}</strong><span>школ рядом</span></div>
+      <div class="info-card"><strong>${building.infrastructure.metro} мин</strong><span>до метро</span></div>
+      <div class="info-card"><strong>${building.infrastructure.parks}</strong><span>парков рядом</span></div>
+    </section>
+
+    <section class="filters-shell ${state.filtersOpen ? "is-open" : ""}" id="filtersShell">
+      <div class="filters-top">
+        <div class="filters-title">
+          <h3>Фильтры</h3>
+          <p>Настройки подбора квартир</p>
+        </div>
+        <button class="toggle-filters" type="button" data-toggle-filters>${state.filtersOpen ? "Скрыть фильтры" : "Открыть фильтры"}</button>
       </div>
-      ${matchCircle(building.relevance, "large")}
-    </section>
-
-    <section class="infra-grid">
-      <article><strong>${building.infrastructure.metro} мин</strong><span>до метро</span></article>
-      <article><strong>${building.infrastructure.kindergartens}</strong><span>детсадов</span></article>
-      <article><strong>${building.infrastructure.schools}</strong><span>школы</span></article>
-      <article><strong>${building.infrastructure.parks}</strong><span>парка</span></article>
-    </section>
-
-    <section class="filters-card ${state.filtersOpen ? "is-open" : ""}">
-      <button class="filters-toggle" type="button" id="filtersToggle">
-        <span>${state.filtersOpen ? "Скрыть фильтры" : "Открыть фильтры"}</span>
-        <b>${apartments.length} из ${building.apartments.length}</b>
-      </button>
-      <div class="filter-chips">${filterChipText()}</div>
-      <div class="filters-body" id="filtersBody">
-        <div class="preset-row">
-          ${[
-            ["any", "Любые"], ["family", "Для семьи"], ["metro", "У метро"], ["ready", "Готовый ремонт"], ["parking", "С паркингом"]
-          ].map(([id, label]) => `<button class="preset ${state.filters.preset === id ? "is-active" : ""}" type="button" data-preset="${id}">${label}</button>`).join("")}
-        </div>
-        <div class="filter-grid">
-          <label>Комнат минимум<select data-filter="minRooms"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-          <label>Метро не дальше<select data-filter="metroMax"><option value="8">8 минут</option><option value="12">12 минут</option><option value="15">15 минут</option><option value="20">20 минут</option></select></label>
-          <label>Ремонт<select data-filter="repair"><option value="any">любой</option><option value="none">без ремонта</option><option value="cosmetic">косметический</option><option value="ready">готово к заселению</option><option value="designer">дизайнерский</option></select></label>
-        </div>
-        <div class="check-grid">
-          <label><input type="checkbox" data-filter="schools" /> школы и детсады рядом</label>
-          <label><input type="checkbox" data-filter="park" /> парк рядом</label>
-          <label><input type="checkbox" data-filter="balcony" /> балкон/лоджия</label>
-          <label><input type="checkbox" data-filter="parking" /> паркинг</label>
-          <label><input type="checkbox" data-filter="middleFloor" /> не первый и не последний этаж</label>
+      <div class="filters-body">
+        <div class="filters-inner">
+          <div class="filters-grid">
+            <div class="filter-card">
+              <label>Количество комнат минимум
+                <span>${state.filters.minRooms}</span>
+                <input type="range" min="1" max="4" step="1" value="${state.filters.minRooms}" data-filter="minRooms" />
+              </label>
+            </div>
+            <div class="filter-card">
+              <label>Метро не дальше
+                <span>${state.filters.metroMax} мин</span>
+                <input type="range" min="5" max="25" step="1" value="${state.filters.metroMax}" data-filter="metroMax" />
+              </label>
+            </div>
+            <div class="filter-card">
+              <label>Ремонт
+                <select data-filter="repair">
+                  ${Object.entries(repairLabels).map(([value, label]) => `<option value="${value}" ${state.filters.repair === value ? "selected" : ""}>${label}</option>`).join("")}
+                </select>
+              </label>
+            </div>
+            <div class="checks">
+              ${[
+                ["schools", "Школы и детсады рядом"],
+                ["park", "Парк рядом"],
+                ["balcony", "Балкон/лоджия"],
+                ["parking", "Паркинг"],
+                ["middleFloor", "Не первый и не последний этаж"]
+              ].map(([key, label]) => `
+                <label class="check-row"><input type="checkbox" data-filter="${key}" ${state.filters[key] ? "checked" : ""}/><span>${label}</span></label>
+              `).join("")}
+            </div>
+          </div>
+          <div class="active-filters">${activeFilterChips()}</div>
         </div>
       </div>
     </section>
 
     <section class="apartments-section">
-      <div class="section-title"><h2>Квартиры в этом доме</h2><span>${apartments.length} вариантов</span></div>
+      <header class="section-head">
+        <div>
+          <p class="eyebrow">Квартиры в доме</p>
+          <h2>${building.apartments.length} варианта</h2>
+        </div>
+        <span class="meta-chip">сортировка по совпадению</span>
+      </header>
       <div class="apartment-list">
-        ${apartments.length ? apartments.map((apt, index) => renderApartmentCard(apt, index)).join("") : `<div class="empty-state">Под выбранные фильтры ничего не найдено. Попробуйте ослабить параметры.</div>`}
+        ${sortedApartments.map(({ apartment, score }) => apartmentCard(apartment, score)).join("")}
       </div>
-    </section>
-  `;
-
-  refs.buildingContent.querySelectorAll("[data-filter]").forEach((input) => {
-    const key = input.dataset.filter;
-    if (input.type === "checkbox") input.checked = Boolean(state.filters[key]);
-    else input.value = state.filters[key];
-  });
+    </section>`;
 }
 
-function renderApartmentCard(apt, index) {
-  const match = calcMatch(apt);
+function apartmentCard(apartment, score) {
   return `
-    <article class="apartment-card" style="--delay:${index * 60}ms">
-      <img src="${apt.image}" alt="${apt.title}" draggable="false" />
-      <div class="apartment-info">
-        <h3>${apt.title}</h3>
-        <p class="apartment-price">${money(apt.price)}</p>
-        <div class="apartment-meta"><span>${apt.rooms}-комн.</span><span>${apt.area} м²</span><span>${apt.floor}/${apt.floors} этаж</span><span>${apt.metro} мин до метро</span></div>
-        ${marketGauge(apt)}
-        <p>${apt.description}</p>
-        <div class="apartment-actions"><button type="button" data-open-apartment="${apt.id}">Подробнее</button><button type="button" data-ai="${apt.id}">Обзор от ИИ</button></div>
+    <article class="apartment-card">
+      <img class="apartment-image" src="${apartment.image}" alt="${apartment.title}" draggable="false" />
+      <div class="apartment-content">
+        <h3>${apartment.title}</h3>
+        <div class="apartment-price"><strong>${apartment.price}</strong><span>${apartment.ppm}</span></div>
+        <p class="muted">${apartment.desc}</p>
+        <div class="apartment-tags">
+          <span class="tag">${apartment.rooms} комн.</span>
+          <span class="tag">${apartment.area} м²</span>
+          <span class="tag">${apartment.floor}/${apartment.floors} этаж</span>
+          <span class="tag">метро ${apartment.metro} мин</span>
+          <span class="tag">${repairLabels[apartment.repair]}</span>
+        </div>
+        ${marketMeter(apartment)}
+        <div class="card-actions">
+          <button class="more-button" type="button" data-open-apartment="${apartment.id}">Подробнее</button>
+          <button class="ai-button" type="button" data-ai-apartment="${apartment.id}">Обзор от ИИ</button>
+        </div>
       </div>
-      ${matchCircle(match)}
-    </article>
-  `;
+      ${matchCircle(score)}
+    </article>`;
 }
 
-function findApartment(id) {
-  const building = state.activeScenario?.building;
-  return building?.apartments.find((apt) => apt.id === id);
-}
-
-function openApartment(id) {
-  const apt = findApartment(id);
-  if (!apt) return;
-  state.activeApartment = apt;
+function openApartment(apartmentId) {
+  const { building, apartment } = getApartment(apartmentId);
+  const score = scoreApartment(apartment);
   refs.drawerCard.innerHTML = `
-    <button class="drawer-close" type="button" data-close-drawer>Закрыть</button>
-    <img src="${apt.image}" alt="${apt.title}" draggable="false" />
-    <div class="drawer-content">
-      <div class="drawer-title"><div><p class="eyebrow">Квартира</p><h2>${apt.title}</h2><strong>${money(apt.price)}</strong></div>${matchCircle(calcMatch(apt), "large")}</div>
-      <div class="apartment-meta"><span>${apt.rooms}-комн.</span><span>${apt.area} м²</span><span>${apt.floor}/${apt.floors} этаж</span><span>${repairLabel(apt.repair)}</span></div>
-      ${marketGauge(apt)}
-      <p>${apt.description}</p>
-      <button class="ai-main-button" type="button" data-ai="${apt.id}">Обзор от ИИ</button>
-    </div>
-  `;
+    <section class="drawer-hero">
+      <img src="${apartment.image}" alt="${apartment.title}" draggable="false" />
+      <div>
+        <p class="eyebrow">${building.address}</p>
+        <h2>${apartment.title}</h2>
+        <p class="muted">${apartment.desc}</p>
+        ${marketMeter(apartment)}
+      </div>
+      ${matchCircle(score, "is-large")}
+    </section>
+    <section class="drawer-meta">
+      <div><strong>${apartment.price}</strong><span>стоимость</span></div>
+      <div><strong>${apartment.area} м²</strong><span>площадь</span></div>
+      <div><strong>${apartment.floor}/${apartment.floors}</strong><span>этаж</span></div>
+      <div><strong>${apartment.metro} мин</strong><span>до метро</span></div>
+    </section>
+    <section class="drawer-section"><h3>Почему подходит</h3><ul class="bullet-list">${apartment.pluses.map((x) => `<li>✓ ${x}</li>`).join("")}</ul></section>
+    <section class="drawer-section"><h3>Что учесть</h3><ul class="bullet-list">${apartment.minuses.map((x) => `<li>— ${x}</li>`).join("")}</ul></section>
+    <div class="drawer-actions">
+      <button class="ai-button" type="button" data-ai-apartment="${apartment.id}">Обзор от ИИ</button>
+      <button class="ghost-button" type="button" data-close-drawer>Закрыть</button>
+    </div>`;
   refs.apartmentDrawer.classList.add("is-open");
   refs.apartmentDrawer.setAttribute("aria-hidden", "false");
 }
@@ -440,82 +426,111 @@ function closeDrawer() {
   refs.apartmentDrawer.setAttribute("aria-hidden", "true");
 }
 
-function openAi(id) {
-  const apt = findApartment(id) || state.activeApartment;
-  if (!apt) return;
-  window.clearInterval(state.aiTimer);
+function openAi(apartmentId) {
+  const { building, apartment } = getApartment(apartmentId);
+  const score = scoreApartment(apartment);
+  const market = marketMeta(apartment.market).label;
+  const text = `Квартира показывает ${score}% совпадение с выбранными параметрами. Главные преимущества — ${apartment.pluses.join(", ").toLowerCase()}. Цена относительно рынка: ${market}.\n\nПо инфраструктуре объект сильный: ${building.infrastructure.schools} школ рядом, ${building.infrastructure.kindergartens} детсадов и метро примерно за ${apartment.metro} минут. ${apartment.rooms >= state.filters.minRooms ? "По комнатности вариант подходит под текущий фильтр." : "По комнатности вариант ниже выбранного фильтра, но может быть интересен по цене."}\n\nИИ-рекомендация: рассмотреть квартиру как один из приоритетных вариантов и сравнить её с соседними предложениями по цене за метр и состоянию ремонта.`;
   refs.aiOutput.textContent = "";
   refs.aiPanel.classList.add("is-open");
   refs.aiPanel.setAttribute("aria-hidden", "false");
-  const building = state.activeScenario.building;
-  const text = `Эта квартира имеет ${calcMatch(apt)}% совпадение с выбранными параметрами. ${apt.rooms}-комнатный формат и площадь ${apt.area} м² подходят для текущего сценария. До метро ${apt.metro} минут, в районе ${building.infrastructure.schools} школы и ${building.infrastructure.kindergartens} детсадов. Цена оценивается как «${getMarket(apt).label}». ${apt.description}`;
-  let i = 0;
+  window.clearInterval(state.aiTimer);
+  let index = 0;
   state.aiTimer = window.setInterval(() => {
-    refs.aiOutput.textContent = text.slice(0, i++);
-    if (i > text.length) window.clearInterval(state.aiTimer);
+    refs.aiOutput.textContent = text.slice(0, index++);
+    if (index > text.length) window.clearInterval(state.aiTimer);
   }, 18);
 }
 
 function closeAi() {
-  window.clearInterval(state.aiTimer);
   refs.aiPanel.classList.remove("is-open");
   refs.aiPanel.setAttribute("aria-hidden", "true");
+  window.clearInterval(state.aiTimer);
 }
 
-function preventNativeGestures() {
-  document.addEventListener("contextmenu", (e) => e.preventDefault());
-  document.addEventListener("gesturestart", (e) => e.preventDefault());
-  document.addEventListener("touchmove", (e) => {
-    if (!e.target.closest(".full-ui-content, .drawer-card, .ai-card")) e.preventDefault();
-  }, { passive: false });
+function updateFilter(target) {
+  const key = target.dataset.filter;
+  if (!key) return;
+  if (target.type === "checkbox") state.filters[key] = target.checked;
+  else if (target.type === "range") state.filters[key] = Number(target.value);
+  else state.filters[key] = target.value;
+  renderBuildingUi();
 }
 
 function bindEvents() {
-  refs.startDemoButton.addEventListener("click", startDemo);
-  refs.pushOpenButton.addEventListener("click", () => { setVisible(refs.appPush, false); startDemo(); });
+  refs.startDemoButton.addEventListener("click", () => startDemo(0));
   refs.returnCameraButton.addEventListener("click", returnToCamera);
+  refs.demoPanel.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-demo]");
+    if (!button) return;
+    startDemo(Number(button.dataset.demo));
+  });
+  refs.foundPanel.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-open-house]");
+    if (!button) return;
+    openFullUi(button.dataset.openHouse);
+  });
   refs.closeFullUi.addEventListener("click", closeFullUi);
+  refs.buildingContent.addEventListener("click", (event) => {
+    const toggle = event.target.closest("[data-toggle-filters]");
+    if (toggle) { state.filtersOpen = !state.filtersOpen; renderBuildingUi(); return; }
+    const apartmentButton = event.target.closest("[data-open-apartment]");
+    if (apartmentButton) { openApartment(apartmentButton.dataset.openApartment); return; }
+    const aiButton = event.target.closest("[data-ai-apartment]");
+    if (aiButton) { openAi(aiButton.dataset.aiApartment); return; }
+  });
+  refs.buildingContent.addEventListener("input", (event) => updateFilter(event.target));
+  refs.buildingContent.addEventListener("change", (event) => updateFilter(event.target));
   refs.drawerBackdrop.addEventListener("click", closeDrawer);
-  refs.aiBackdrop.addEventListener("click", closeAi);
+  refs.drawerCard.addEventListener("click", (event) => {
+    if (event.target.closest("[data-close-drawer]")) closeDrawer();
+    const aiButton = event.target.closest("[data-ai-apartment]");
+    if (aiButton) openAi(aiButton.dataset.aiApartment);
+  });
   refs.closeAi.addEventListener("click", closeAi);
-  refs.foundPanel.addEventListener("click", (e) => { if (e.target.closest(".found-panel-button")) openFullUi(); });
-  refs.demoOptions.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-scenario]");
-    if (btn) selectScenario(btn.dataset.scenario);
+  refs.aiBackdrop.addEventListener("click", closeAi);
+  document.addEventListener("contextmenu", (event) => event.preventDefault());
+  document.addEventListener("dragstart", (event) => event.preventDefault());
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") { closeDrawer(); closeAi(); closeFullUi(); }
   });
-  refs.buildingContent.addEventListener("click", (e) => {
-    const toggle = e.target.closest("#filtersToggle");
-    if (toggle) { state.filtersOpen = !state.filtersOpen; renderBuilding(); return; }
-    const preset = e.target.closest("[data-preset]");
-    if (preset) { applyPreset(preset.dataset.preset); return; }
-    const openBtn = e.target.closest("[data-open-apartment]");
-    if (openBtn) { openApartment(openBtn.dataset.openApartment); return; }
-    const aiBtn = e.target.closest("[data-ai]");
-    if (aiBtn) { openAi(aiBtn.dataset.ai); return; }
+  document.addEventListener("touchmove", (event) => {
+    if (!event.target.closest(".full-ui-content, .drawer-card, .ai-card")) event.preventDefault();
+  }, { passive: false });
+  refs.demoVideo.addEventListener("ended", () => setStatus("Ролик завершён", "muted"));
+  refs.demoVideo.addEventListener("click", () => refs.demoVideo.paused && refs.demoVideo.play().catch(() => {}));
+}
+
+function bindArMarker() {
+  if (!refs.marker) return;
+  refs.marker.addEventListener("markerFound", () => {
+    if (state.mode !== "camera") return;
+    showFoundPanel(buildings[0], "camera");
   });
-  refs.buildingContent.addEventListener("change", (e) => {
-    const input = e.target.closest("[data-filter]");
-    if (!input) return;
-    const key = input.dataset.filter;
-    state.filters[key] = input.type === "checkbox" ? input.checked : input.value;
-    state.filters.preset = "custom";
-    renderBuilding();
+  refs.marker.addEventListener("markerLost", () => {
+    if (state.mode !== "camera") return;
+    // Панель намеренно оставляем, чтобы пользователь успел открыть объект.
   });
-  refs.drawerCard.addEventListener("click", (e) => {
-    if (e.target.closest("[data-close-drawer]")) closeDrawer();
-    const aiBtn = e.target.closest("[data-ai]");
-    if (aiBtn) openAi(aiBtn.dataset.ai);
-  });
-  refs.demoVideo.addEventListener("ended", () => { refs.scanStatus.textContent = "Ролик завершён. Можно выбрать другой ролик."; });
+  const scene = refs.arScene;
+  scene?.addEventListener("camera-init", () => setStatus("Наведите камеру на объект", ""));
+  scene?.addEventListener("camera-error", () => setStatus("Камера не запустилась. Проверьте доступ к камере.", "muted"));
+  window.setTimeout(() => {
+    if (state.mode === "camera" && !document.querySelector("video")) {
+      setStatus("AR.js не загрузил камеру. Проверьте интернет и разрешение камеры.", "muted");
+    }
+  }, 3500);
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 
 function init() {
-  preventNativeGestures();
-  renderDemoButtons();
+  setMode("camera");
   bindEvents();
-  startCamera();
-  showPush();
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  bindArMarker();
+  registerServiceWorker();
 }
 
 init();
